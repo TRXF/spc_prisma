@@ -1,0 +1,1884 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider          = "mongodb"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+model Account {
+  id                       String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId                   String  @db.ObjectId
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String? @db.String
+  refresh_token_expires_in Int?
+  access_token             String? @db.String
+  expires_at               Int?
+  ext_expires_in           Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String? @db.String
+  session_state            String?
+  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model User {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  userCode      String?     @unique @default(cuid())
+  name          String?
+  email         String      @unique
+  emailVerified DateTime?
+  apikey        String?     @unique
+  secret        String?     @unique
+  image         String?
+  createdAt     DateTime?   @default(now())
+  deletedAt     DateTime?
+  updatedAt     DateTime?   @updatedAt
+  photo_url     String?
+  phone_number  String?     @unique
+  domain        String?
+  company       String?
+  password      String?
+  role          UserRole?
+  salesid       String?     @unique
+  unit          String?
+  active        Boolean?    @default(true)
+  vaga_address  String?     @unique
+  mnemonic      String?
+  privateKey    String?
+  publicKey     String?
+  postcodes     Json?
+  is_admin      Boolean?    @default(false)
+  status        UserStatus?
+
+  accounts      Account[]
+  sessions      Session[]
+  ActivityLog   ActivityLog[]
+  Group         Group?          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId       String?         @db.ObjectId
+  Ticket        Ticket[]
+  TicketComment TicketComment[]
+  TicketHistory TicketHistory[]
+  Sourcing      Sourcing[]
+  Call          Call[]
+  Tasks         Tasks[]
+  Note          Note[]
+  Notification  Notification[]
+  Project       Project[]
+  Approver      Approver[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  Agent
+  Customer
+  Admin
+}
+
+enum UserStatus {
+  Active
+  Inactive
+}
+
+model Group {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  users       User[]
+
+  @@map("groups")
+}
+
+model sales_users {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  sales_user_id Int       @unique
+  first_name    String
+  last_name     String
+  email         String
+  phone         String?
+  mobile        String?
+  calendar_id   String?
+  is_active     Boolean?
+  properties    Json?
+  roles         Json?
+  tenants       Json?
+  createdAt     DateTime? @default(now())
+  updatedAt     DateTime? @updatedAt
+
+  @@map("sales-users")
+}
+
+model VerificationToken {
+  identifier String   @id @default(auto()) @map("_id") @db.ObjectId
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
+}
+
+// model ProjectPhotos {
+//   id         String  @id @default(auto()) @map("_id") @db.ObjectId
+//   leadId     String? @map("leadId")
+//   contact_id String  @unique @map("contact_id")
+//   category   String  @map("category")
+//   url        String  @map("url")
+//   name       String? @map("name")
+//   note       String? @map("note")
+//   uuid       String? @unique @map("uuid")
+
+//   createdAt  DateTime @default(now()) @map("created_at")
+//   Project    Project? @relation(fields: [project_id], references: [id], onDelete: Cascade)
+//   project_id String?  @db.ObjectId
+
+//   @@map(name: "projectphotos")
+// }
+
+model Antrag {
+  id                          String   @id @default(auto()) @map("_id") @db.ObjectId
+  documentUrl                 String
+  createdAt                   DateTime @default(now())
+  project_id                  String?  @db.ObjectId
+  lead_id                     Int      @unique
+  salesid                     Int?
+  sales_agent                 String?
+  promo_code                  String?
+  alt_street_name             String?
+  alt_street_number           String?
+  alt_additional              String?
+  alt_postcode                String?
+  alt_city                    String?
+  alt_country                 String?
+  product_id                  Int?
+  system_size                 String?
+  storage                     Boolean?
+  storage_size                String?
+  has_signed_wallbox_contract Boolean?
+  signature                   String?
+
+  project Project? @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  lead    Lead?    @relation(fields: [lead_id], references: [lead_id], onDelete: Cascade)
+
+  @@map(name: "antrag")
+}
+
+model Angebot {
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  documentUrl         String
+  salesid             Int?
+  sales_agent         String?
+  createdAt           DateTime @default(now())
+  project_id          String?  @db.ObjectId
+  lead_id             Int      @unique
+  downpayment         Float?
+  inverter            Int?
+  constructionPartner Int?
+  Project             Project? @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "angebot")
+}
+
+model EnergyCheck {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid        String   @unique
+  documentUrl String
+  createdAt   DateTime @default(now())
+  project_id  String?  @db.ObjectId
+  lead_id     Int      @unique
+  salesid     Int?
+  Project     Project? @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "energycheck")
+}
+
+// TO BE DELETED ------
+
+model storagePrice {
+  id                          String   @id @default(auto()) @map("_id") @db.ObjectId
+  no_cloud_increase           Float
+  no_cloud_baese              Float
+  cloud_increase              Float
+  cloud_base                  Float
+  emergency_no_cloud_increase Float
+  emegency_no_cloud_base      Float
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+
+  @@map(name: "storage_price")
+}
+
+model product_storage {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  storage_price_id Int
+  name             String
+  capacity         Int
+  size             Float
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map(name: "product_storage")
+}
+
+model product_panels {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  type      Int
+  name      String
+  capacity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map(name: "product_panels")
+}
+
+// ------
+model price_model_old {
+  id                               String  @id @default(auto()) @map("_id") @db.ObjectId
+  version                          Int
+  devolo_precentage                Float
+  devolo_mehrkosten                Float
+  erdung_precentage                Float
+  erdung_mehrkosten                Float
+  erdung_aufschlag                 Float
+  erdung_aufschlag_mehrkosten      Float
+  blechsatzziegel                  Float
+  blechsatzziegle_mehrkosten       Float
+  isolierung                       Float
+  isolierung_mehrkosten            Float
+  sonstige                         Float
+  sonstige_mehrkosten              Float
+  not_cloud_increase               Float
+  not_cloud_base                   Float
+  cloud_increase                   Float
+  cloud_base                       Float
+  emergency_not_cloud              Float
+  emergency_cloud                  Float
+  tilt_price                       Float
+  no_shadow                        Float
+  nod_shadow_price                 Float
+  singular_shadow                  Float
+  singular_shadow_price            Float
+  areal_shadow                     Float
+  zusamenlegung_wahrscheinlichkeit Float
+  zusamenlegung_aufschlag          Float
+  operational_costs                Float
+  division_easy                    Float
+  division_autark                  Float
+  profit_margin                    Float
+  provision_easy                   Float
+  provision_autark                 Float
+  energybase                       Float
+  vat                              Float
+  active                           Boolean
+  category                         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Project Project[]
+
+  @@map(name: "price_model_old")
+}
+
+model price_probabilities {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  probabilities_id Int
+  name             String
+  value            Float
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map(name: "price_probabilities")
+}
+
+// ------- NEW MODELS ---------
+
+model Contact {
+  id                       String    @id @default(auto()) @map("_id") @db.ObjectId
+  uuid                     String    @unique
+  tenant_id                Int?
+  source_id                Int?
+  prospect_number          Int? // Nullable
+  customer_number          Int?      @unique
+  salutation               String
+  title                    String? // Nullable
+  first_name               String
+  last_name                String
+  email                    String    @unique
+  phone                    String
+  mobile                   String?
+  is_email_verified        Boolean?
+  has_privacy_opt_in       Boolean?
+  has_promotion_opt_in     Boolean?
+  born_at                  String
+  lead_id                  Int       @unique
+  lead_stage               Int?
+  lifecycle_stage          Int?
+  status                   Int?
+  construction_partners_id String?   @db.ObjectId
+  createdAt                DateTime? @default(now())
+  updatedAt                DateTime? @updatedAt
+
+  project               Project[]
+  address               Address[]
+  appointment           Appointment[]
+  activityLog           ActivityLog[]
+  construction_partners construction_partners? @relation(fields: [construction_partners_id], references: [id], onDelete: Cascade)
+  ticket                Ticket[]
+  call                  Call[]
+  tasks                 Tasks[]
+  note                  Note[]
+  bankAccount           BankAccount[]
+
+  @@map(name: "crm_contact")
+}
+
+model Address {
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  uuid          String  @unique
+  street_name   String
+  street_number String
+  additional    String?
+  postcode      String
+  city          String
+  country       String
+  contact_id    String  @db.ObjectId
+
+  contact Contact @relation(fields: [contact_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "crm_address")
+}
+
+model Appointment {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid          String   @unique
+  address_id    String   @db.ObjectId
+  sales_user_id Int      @unique
+  starts_at     DateTime
+  ends_at       DateTime
+
+  contact    Contact @relation(fields: [contact_id], references: [id], onDelete: Cascade)
+  contact_id String  @db.ObjectId
+
+  @@map(name: "crm_appointments")
+}
+
+model Project {
+  id                       String    @id @default(auto()) @map("_id") @db.ObjectId
+  lead_id                  Int       @unique
+  uuid                     String    @unique
+  name                     String?
+  installation_date        DateTime?
+  estimated_production     Int?
+  project_status           Int
+  notes                    String?
+  bank_account_id          String?   @db.ObjectId
+  contract_type_id         Int?
+  product_id               Int?
+  assigned_to              String?   @db.ObjectId
+  contact_id               String?   @unique @db.ObjectId
+  construction_partners_id String?   @db.ObjectId
+  price_model_id           String?   @db.ObjectId
+  chang_request            Boolean?
+  createdAt                DateTime? @default(now())
+  updatedAt                DateTime? @updatedAt
+
+  antrag                      Antrag[]
+  angebot                     Angebot[]
+  energyCheck                 EnergyCheck[]
+  contact                     Contact?                      @relation(fields: [contact_id], references: [id], onDelete: Cascade)
+  construction_partners       construction_partners?        @relation(fields: [construction_partners_id], references: [id], onDelete: Cascade)
+  price_model                 price_model_old?              @relation(fields: [price_model_id], references: [id], onDelete: Cascade)
+  user                        User?                         @relation(fields: [assigned_to], references: [id], onDelete: Cascade)
+  buildingRoof                BuildingRoof[]
+  landregister                Landregister[]
+  electricityInstallation     ElectricityInstallation[]
+  building                    Building[]
+  buildingAddress             BuildingAddress[]
+  buildingOwner               BuildingOwner[]
+  buildingElectricityConsumer BuildingElectricityConsumer[]
+  buildingElectricityMeter    BuildingElectricityMeter[]
+  altOwner                    AltOwner[]
+  meters                      Meters[]
+  ticket                      Ticket[]
+  solarConfiguration          SolarConfiguration[]
+  buildingOthers              BuildingOthers[]
+  wallbox                     Wallbox[]
+  sourcing                    Sourcing[]
+  constructionDate            ConstructionDate[]
+  Logbook                     Logbook[]
+  RejectionReason             RejectionReason[]
+  PlanningInformation         PlanningInformation[]
+
+  @@map(name: "srm_project")
+}
+
+model AltOwner {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  uuid       String  @unique
+  lead_id    Int     @unique
+  first_name String
+  last_name  String
+  born_at    String
+  project_id String? @db.ObjectId
+
+  project Project? @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_building_alt_owner")
+}
+
+model Meters {
+  id                               String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid                             String   @unique
+  lead_id                          Int?     @unique
+  electricity_consumption_annually Int?
+  device_id                        String
+  purpose                          String?
+  is_main_device                   Boolean?
+  project_id                       String?  @db.ObjectId
+
+  project Project? @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_meters")
+}
+
+model Landregister {
+  id                           String  @id @default(auto()) @map("_id") @db.ObjectId
+  uuid                         String  @unique
+  lead_id                      Int?    @unique
+  land_register_title          String?
+  land_register_district_court String?
+  land_register_district_name  String?
+  land_register_page           String?
+  land_register_field_name     String?
+  land_register_field_sector   String?
+  project_id                   String? @db.ObjectId
+  approvalProcessId            String? @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project? @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_landregister")
+}
+
+model BankAccount {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid        String   @unique
+  holder_name String
+  bank_name   String
+  bank_city   String
+  iban        String   @unique
+  bic         String
+  contact_id  String   @db.ObjectId
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  contact Contact @relation(fields: [contact_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_bank_account")
+}
+
+model ElectricityInstallation {
+  id                                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid                               String   @unique
+  building_id                        String?  @unique @db.ObjectId
+  meter_box_to_junction_box_distance Int?
+  meter_box_location                 String?
+  junction_box_location_id           Int?
+  has_equipotential_bonding_rail     Boolean?
+  router_location_id                 Int?
+  has_lan_connectivity               Boolean?
+  project_id                         String?  @db.ObjectId
+  createdAt                          DateTime @default(now())
+  updatedAt                          DateTime @updatedAt
+
+  project  Project?  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  building Building? @relation(fields: [building_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_electricity_installation")
+}
+
+model Building {
+  id                      String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid                    String   @unique
+  type_id                 Int
+  type_other              String?
+  is_lead_owner           Boolean
+  is_leads_main_residence Boolean
+  is_commercial           Boolean
+  project_id              String   @unique @db.ObjectId
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  project                     Project?                      @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  buildingAddress             BuildingAddress[]
+  buildingOwner               BuildingOwner[]
+  buildingElectricityConsumer BuildingElectricityConsumer[]
+  buildingElectricityMeter    BuildingElectricityMeter[]
+  buildingRoof                BuildingRoof[]
+  solarConfiguration          SolarConfiguration[]
+  buildingOthers              BuildingOthers[]
+  wallbox                     Wallbox[]
+  electricityInstallation     ElectricityInstallation[]
+
+  @@map(name: "srm_building")
+}
+
+model BuildingAddress {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  uuid          String    @unique
+  street_name   String?
+  street_number String?
+  additional    String?
+  postcode      String?
+  city          String?
+  country       String?
+  building_id   String?   @db.ObjectId
+  project_id    String?   @unique @db.ObjectId
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  building      Building? @relation(fields: [building_id], references: [id], onDelete: Cascade)
+  project       Project?  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_building_address")
+}
+
+// Is AltOwner the same as BuildingOwner?
+model BuildingOwner {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  uuid        String    @unique
+  first_name  String?
+  last_name   String?
+  email       String?   @unique
+  born_at     DateTime?
+  building_id String?   @db.ObjectId
+  project_id  String?   @unique @db.ObjectId
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  building    Building? @relation(fields: [building_id], references: [id], onDelete: Cascade)
+
+  project Project? @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_building_owner")
+}
+
+model BuildingElectricityConsumer {
+  id                      String    @id @default(auto()) @map("_id") @db.ObjectId
+  uuid                    String    @unique
+  acquisition_planned_at  DateTime?
+  electricity_consumption Int?
+  is_captive_consumption  Boolean?
+  special_consumption     String?
+  output_water_heater     Float?
+  building_id             String?   @db.ObjectId
+  project_id              String?   @unique @db.ObjectId
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  building                Building? @relation(fields: [building_id], references: [id], onDelete: Cascade)
+  project                 Project?  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_building_electricity_consumer")
+}
+
+model BuildingElectricityMeter {
+  id                               String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid                             String   @unique
+  device_id                        String?  @unique
+  purpose                          String?
+  electricity_consumption_annually Int?
+  is_main_device                   Boolean?
+  building_id                      String   @db.ObjectId
+  project_id                       String   @unique @db.ObjectId
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  building  Building? @relation(fields: [building_id], references: [id], onDelete: Cascade)
+  project   Project?  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_building_electricity_meter")
+}
+
+model BuildingRoof {
+  id                          String    @id @default(auto()) @map("_id") @db.ObjectId
+  uuid                        String    @unique
+  type_id                     Int?
+  roofing_type_id             Int?
+  type_other                  String?
+  age_range_id                Int?
+  orientation_options         Json?
+  orientation_id              Int?
+  shading_type_id             Int?
+  tiles_fixing_type_id        Int?
+  tiles_visible_size          String?
+  module_area                 Int?
+  module_fields_count         Int?
+  eaves_height                Float?
+  eaves_height_alt            Float?
+  ridge_height                Float?
+  ridge_height_alt            Float?
+  renovated_at                DateTime?
+  insulation_type_id          Float?
+  rafter_insulation_thickness Float?
+  rafter_width                Float?
+  width                       Float?
+  width_alt                   Float?
+  length                      Float?
+  length_alt                  Float?
+  pitch                       Float?
+  comment                     String?
+  building_id                 String?   @db.ObjectId
+  project_id                  String?   @unique @db.ObjectId
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @updatedAt
+  building                    Building? @relation(fields: [building_id], references: [id], onDelete: Cascade)
+  project                     Project?  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_building_roof")
+}
+
+model SolarConfiguration {
+  id                                  String    @id @default(auto()) @map("_id") @db.ObjectId
+  uuid                                String    @unique
+  building_id                         String?   @db.ObjectId
+  project_id                          String?   @unique @db.ObjectId
+  module_type_id                      String?   @db.ObjectId
+  module_variant_id                   Int?
+  modules_count                       Int?
+  modules_crosswise                   Boolean?
+  meter_replacement_costs             Float?
+  is_cloud                            Boolean?
+  is_meter_consolidation_desired      Boolean?
+  storage_type_id                     String?   @db.ObjectId
+  storage_can_substitute_power_supply Boolean?
+  backup_power_capability_id          Boolean?
+  meter_box_renewal                   Float?
+  emobile_charging_capacity           String?
+  has_lan_connectivity                Boolean?
+  boardBinder                         Boolean?
+  boardBinderOther                    String?
+  yield_forecast                      Float?    @default(0)
+  createdAt                           DateTime  @default(now())
+  updatedAt                           DateTime  @updatedAt
+  building                            Building? @relation(fields: [building_id], references: [id], onDelete: Cascade)
+  project                             Project?  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_solar_configuration")
+}
+
+model BuildingOthers {
+  id                               String  @id @default(auto()) @map("_id") @db.ObjectId
+  uuid                             String  @unique
+  building_id                      String? @unique @db.ObjectId
+  project_id                       String? @db.ObjectId
+  sales_user_id                    Int?
+  roof_size_range_id               Int?
+  remaining_consumption_tariff_id  Float?
+  remaining_consumption_base_price Float?
+  remaining_consumption_unit_price Float?
+  electricity_price_increase       Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project  Project?  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  building Building? @relation(fields: [building_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_building_others")
+}
+
+model Wallbox {
+  id                          String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid                        String   @unique
+  project_id                  String?  @unique @db.ObjectId
+  building_id                 String?  @db.ObjectId
+  product_id                  String?  @db.ObjectId
+  has_signed_wallbox_contract Boolean?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project  Project?  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  building Building? @relation(fields: [building_id], references: [id], onDelete: Cascade)
+  product  Product?  @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_wallbox")
+}
+
+model ConstructionDate {
+  id                      String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid                    String   @unique
+  project_id              String   @db.ObjectId
+  construction_partner_id String?  @db.ObjectId
+  date                    String?
+  time                    String?
+  comment                 String?
+  canceled                Boolean?
+  perceived               Boolean?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project              Project                @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  construction_partner construction_partners? @relation(fields: [construction_partner_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_construction_date")
+}
+
+model Logbook {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid       String   @unique
+  project_id String   @db.ObjectId
+  title      String?
+  url        String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_logbook")
+}
+
+model RejectionReason {
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid               String   @unique
+  sourcingProject_id String?  @db.ObjectId
+  project_id         String?  @db.ObjectId
+  reason             String
+  description        String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  sourcing Sourcing? @relation(fields: [sourcingProject_id], references: [id], onDelete: Cascade)
+  project  Project?  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_rejection_reason")
+}
+
+model PlanningInformation {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid       String   @unique
+  project_id String   @unique @db.ObjectId
+  comment    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_planning_information")
+}
+
+// --------------------------------------------------------------------------------------------------
+// ERP
+
+model Product {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  uuid           String?    @unique
+  sku            String    @unique
+  name           String
+  description    String?
+  intTaxonomy    String?
+  serialnumber   String?
+  price          Float
+  purchase_price Float?
+  quantity       Int
+  weight         Float?
+  datasheet      String?
+  capacity       Float?
+  wattage        Float?
+  voltage        Float?
+  active         Boolean?  @default(true)
+  startDate      DateTime? @default(now())
+  endDate        DateTime?
+  pid            Int?
+  categoryId     String    @unique @db.ObjectId
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  dimensions    Dimensions?
+  manufacturer  Manufacturer?
+  category      ProductCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  SourcingItems SourcingItems[]
+  Wallbox       Wallbox[]
+
+  @@map(name: "product")
+}
+
+model Dimensions {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  uuid      String?  @unique
+  length    Float
+  width     Float
+  height    Float
+  productId String  @unique @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map(name: "product_dimensions")
+}
+
+model Manufacturer {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  uuid String? @unique
+
+  name      String
+  address   String?
+  contact   String?
+  productId String  @unique @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map(name: "product_manufacturer")
+}
+
+model ProductCategory {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+
+  Product Product[]
+
+  @@map(name: "product_category")
+}
+
+// -----------------------------APPROVAL PROCESS--------------------------------
+
+model Approver {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String    @db.ObjectId
+  approved   Boolean   @default(false)
+  approvedAt DateTime? @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId])
+  @@map(name: "approver")
+}
+
+// ------------------------------USER LOGGER------------------------------
+model ActivityLog {
+  id         String     @id @default(auto()) @map("_id") @db.ObjectId
+  action     ActionType // e.g., "CALL", "EMAIL", "MEETING", "CONTRACT_SIGNED"
+  entity     EntityType // e.g., "Customer", "Supplier", "Opportunity", "Lead"
+  lead_id    Int?       @unique // ID of the entity that the action was related to
+  project_id String?    @db.ObjectId // ID of the entity that the action was related to
+  userId     String     @db.ObjectId // ID of the staff or salesperson who logged the activity
+  contact_id String?    @db.ObjectId // ID of the customer or supplier contact involved
+  createdAt  DateTime   @default(now())
+  details    Json? // Detailed notes or information about the activity
+  uuid       String?    @unique
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contact Contact? @relation(fields: [contact_id], references: [id], onDelete: Cascade)
+
+  @@map("activity_logs")
+}
+
+enum ActionType {
+  CALL
+  EMAIL
+  MEETING
+  TASK
+  QUOTATION_SEND
+  ENERGY_CHECK_SIGNED
+  DOCUMENT_UPLOAD
+  CONTRACT_SIGNED
+  NEGOTIATION
+  SUPPORT_TICKET
+  FOLLOW_UP
+  // Add more as needed...
+}
+
+enum EntityType {
+  CONTACT
+  SUPPLIER
+  OPPORTUNITY
+  PROJECT
+  LEAD
+  CASE
+  TICKET
+  SOURCING
+  // Add more as needed...
+}
+
+enum ContactType {
+  CUSTOMER
+  SUPPLIER
+  PROSPECT
+  PARTNER
+  // Add more as needed...
+}
+
+// -------------------- Notifications ---------------------------------
+
+model Notification {
+  id          String           @id @default(auto()) @map("_id") @db.ObjectId
+  uuid        String           @unique
+  user_id     String           @db.ObjectId
+  type        NotificationType
+  title       String
+  description String
+  read        Boolean          @default(false)
+  url         String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+enum NotificationType {
+  Ticket
+  Task
+  Call
+  Note
+  Meeting
+  Email
+  Quotation
+  EnergyCheck
+  Document
+  Contract
+  Negotiation
+  FollowUp
+  Project
+  // Add more as needed...
+}
+
+// ------------------------------SYSTEM LOGGER------------------------------
+
+// ------------------------------CRM------------------------------
+
+model Ticket {
+  id          String         @id @default(auto()) @map("_id") @db.ObjectId
+  subject     String
+  description String
+  uuid        String         @unique
+  source      TicketSource?
+  user_id     String         @db.ObjectId
+  contact_id  String?        @db.ObjectId
+  project_id  String?        @db.ObjectId
+  sourcing_id String?        @db.ObjectId
+  assignedTo  String?        @db.ObjectId
+  incident    String?
+  category    String?
+  status      TicketStatus
+  priority    TicketPriority
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  contact  Contact?  @relation(fields: [contact_id], references: [id], onDelete: Cascade)
+  project  Project?  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  sourcing Sourcing? @relation(fields: [sourcing_id], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  histories     TicketHistory[]
+  ticketComment TicketComment[]
+
+  @@map("crm_tickets")
+}
+
+enum TicketStatus {
+  Open
+  Pending
+  Resolved
+  Closed
+}
+
+enum TicketSource {
+  Email
+  Phone
+  Chat
+  Web
+  Other
+}
+
+enum TicketPriority {
+  Low
+  Medium
+  High
+  Critical
+}
+
+model TicketComment {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid          String   @unique
+  ticket_id     String   @db.ObjectId
+  commentedById String   @db.ObjectId
+  comment       String
+  mood          String?
+  createdAt     DateTime @default(now())
+
+  ticket                  Ticket                  @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
+  commentedBy             User                    @relation(fields: [commentedById], references: [id], onDelete: Cascade)
+  ticketCommentAttachment TicketCommentDocument[]
+
+  @@map("crm_tickets_comments")
+}
+
+model TicketCommentDocument {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  ticker_comment_id String   @db.ObjectId
+  uuid              String   @unique
+  createdAt         DateTime @default(now())
+
+  ticketcomment TicketComment @relation(fields: [uuid], references: [uuid], onDelete: Cascade)
+
+  @@map("crm_tickets_comments_documents")
+}
+
+model TicketTag {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String @unique
+
+  @@map("crm_tickets_tags")
+}
+
+model TicketHistory {
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  ticket     Ticket       @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId   String       @db.ObjectId
+  action     TicketAction
+  actionBy   User         @relation(fields: [actionById], references: [id], onDelete: Cascade)
+  actionById String       @db.ObjectId
+  actionAt   DateTime     @default(now())
+  details    String?
+
+  @@map("crm_tickets_history")
+}
+
+enum TicketAction {
+  Created
+  Edited
+  Closed
+}
+
+model Call {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  uuid       String    @unique
+  addedById  String    @db.ObjectId
+  email      String    @unique
+  contact_id String    @db.ObjectId
+  outcome    Int?
+  direction  Int?
+  date       DateTime?
+  time       String?
+  note       String
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+  deletedAt  DateTime?
+
+  contact Contact @relation(fields: [contact_id], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [addedById], references: [id], onDelete: Cascade)
+
+  @@map("crm_calls")
+}
+
+model Tasks {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  uuid       String    @unique
+  addedById  String    @db.ObjectId
+  email      String    @unique
+  contact_id String    @db.ObjectId
+  note       String
+  title      String
+  reminder   String?
+  type       Int?
+  priority   Int?
+  queue      String?
+  assignedTo String?
+  date       DateTime?
+  status     Int?
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+  deletedAt  DateTime?
+
+  contact Contact @relation(fields: [contact_id], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [addedById], references: [id], onDelete: Cascade)
+
+  @@map("crm_tasks")
+}
+
+model Note {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  uuid       String    @unique
+  addedById  String    @db.ObjectId
+  email      String    @unique
+  contact_id String    @db.ObjectId
+  title      String
+  note       String
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+  deletedAt  DateTime?
+
+  contact Contact @relation(fields: [contact_id], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [addedById], references: [id], onDelete: Cascade)
+
+  @@map("crm_notes")
+}
+
+// ------------------------------SRM------------------------------
+
+model construction_partners {
+  id                      String                    @id @default(auto()) @map("_id") @db.ObjectId
+  ep_id                   Int                       @unique
+  uuid                    String
+  company_name            String
+  email                   String?                   @unique
+  companyDomain           String?
+  industry                String?
+  type                    String?
+  phone                   String?
+  fax                     String?
+  hrb                     String?
+  vat_id                  String?
+  street                  String?
+  city                    String?
+  state                   String?
+  zip                     String?
+  country                 String?
+  employees               String?
+  revenue                 String?
+  description             String?
+  website                 String?
+  logo_url                String?
+  preffered_communication ConstructorCommunication?
+  metaData                Json?
+  is_quota_partner        Boolean?
+
+  is_active Boolean?
+  tenants   Json?
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  lastActivity                DateTime?                     @default(now())
+  project                     Project[]
+  contact                     Contact[]
+  sourcingSupplier            SourcingSupplier[]
+  construction_partner_active construction_partner_active[]
+  ConstructionDate            ConstructionDate[]
+
+  @@map("erp_construction_partners")
+}
+
+model construction_partner_active {
+  id                       String    @id @default(auto()) @map("_id") @db.ObjectId
+  state                    String?
+  postcodes                Json
+  description              String?
+  construction_partners_id String?   @db.ObjectId
+  postcode_list_id         String?   @db.ObjectId
+  createdAt                DateTime? @default(now())
+  updatedAt                DateTime? @updatedAt
+
+  construction_partners construction_partners? @relation(fields: [construction_partners_id], references: [id], onDelete: Cascade)
+  postcodeList          PostcodeList?          @relation(fields: [postcode_list_id], references: [id], onDelete: Cascade)
+
+  @@map("erp_construction_partner_active")
+}
+
+enum ConstructorCommunication {
+  EMAIL
+  PHONE
+  SMS
+  WHATSAPP
+  POSTAL
+  WEB
+}
+
+model BankAccountCompany {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid        String   @unique
+  holder_name String
+  bank_name   String
+  bank_city   String
+  iban        String   @unique
+  bic         String
+  contact_id  String   @db.ObjectId
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map(name: "erp_bank_account_company")
+}
+
+model Task {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  column      String
+  order       Int?
+  description String?
+  uuid        String  @unique
+  priority    Int?
+  template    String?
+  assignedTo  String? @db.ObjectId
+  project_id  String? @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map(name: "srm_task")
+}
+
+model Sourcing {
+  id                      String         @id @default(auto()) @map("_id") @db.ObjectId
+  uuid                    String         @unique
+  project_id              String         @unique @db.ObjectId
+  assignedTo              String?        @db.ObjectId
+  name                    String?
+  description             String?
+  contract_type_id        Int?
+  event_type_id           EventType
+  is_test_project         Boolean?
+  language_id             Int?
+  group_id                String?        @db.ObjectId
+  region_id               String?        @db.ObjectId
+  baseline_spend          Float?
+  target_savings          Float?
+  category                Int?
+  currency                String?        @default("EUR")
+  contract_effective_date DateTime?
+  contract_expiry_date    DateTime?
+  status                  SourcingStatus
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+
+  project          Project            @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  user             User?              @relation(fields: [assignedTo], references: [id], onDelete: Cascade)
+  sourcingRules    SourcingRules[]
+  sourcingSupplier SourcingSupplier[]
+  sourcingItems    SourcingItems[]
+  sourcingComments SourcingComments[]
+  sourcingOverflow SourcingOverflow[]
+
+  postcodeList    PostcodeList?     @relation(fields: [region_id], references: [id], onDelete: Cascade)
+  sourcingContent SourcingContent[]
+  sourcingTasks   SourcingTasks[]
+  Ticket          Ticket[]
+  sourcingBids    SourcingBids[]
+  RejectionReason RejectionReason[]
+
+  @@map(name: "srm_ sourcing")
+}
+
+enum SourcingStatus {
+  OPEN
+  CLOSED
+  ARCHIVED
+  PROCESSED
+  SUBMITTED
+  COLLABORATING
+}
+
+enum EventType {
+  RFI
+  RFP
+  QUOTE
+  INFO
+  //... add more as needed
+}
+
+model SourcingRules {
+  id                        String    @id @default(auto()) @map("_id") @db.ObjectId
+  uuid                      String    @unique
+  sourcing_id               String    @db.ObjectId
+  response_date             DateTime?
+  due_date                  DateTime?
+  due_date_days             Int?
+  est_award_time            DateTime?
+  experienceYears           Boolean?
+  completedProjects         Boolean?
+  companyProfile            Boolean?
+  financialStatements       Boolean?
+  references                Boolean?
+  technicalSpecifications   Boolean?
+  bidSubmissionDate         Boolean?
+  bidPrice                  Boolean?
+  taxesIncluded             Boolean?
+  conflictsOfInterest       Boolean?
+  projectTimeline           Boolean?
+  equipmentCosts            Boolean?
+  laborCosts                Boolean?
+  operationMaintenanceCosts Boolean?
+  additionalCosts           Boolean?
+  pricingValidity           Boolean?
+  bidSecurity               Boolean?
+  roof_planning             Boolean?
+  performanceSecurity       Boolean?
+  siteVisitDate             Boolean?
+  grievance                 Boolean?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+
+  sourcing                            Sourcing                              @relation(fields: [sourcing_id], references: [id], onDelete: Cascade)
+  sourcingPVPanelSpecification        SourcingPVPanelSpecification[]
+  sourcingInverterSpecification       SourcingInverterSpecification[]
+  sourcingMountingSystemSpecification SourcingMountingSystemSpecification[]
+  sourcingContractAgreement           SourcingContractAgreement?            @relation(fields: [sourcingContractAgreementId], references: [id], onDelete: Cascade)
+  sourcingContractAgreementId         String?                               @db.ObjectId
+  sourcingContent                     SourcingContent[]
+
+  @@map(name: "srm_sourcing_rules")
+}
+
+model SourcingPVPanelSpecification {
+  id                   String            @id @default(auto()) @map("_id") @db.ObjectId
+  brand                String
+  type                 String
+  warrantyDuration     Int
+  performanceGuarantee String
+  sourcingRules        SourcingRules     @relation(fields: [sourcing_rule_id], references: [id], onDelete: Cascade)
+  sourcing_rule_id     String            @db.ObjectId
+  SourcingSupplier     SourcingSupplier? @relation(fields: [sourcingSupplierId], references: [id], onDelete: Cascade)
+  sourcingSupplierId   String?           @db.ObjectId
+}
+
+model SourcingInverterSpecification {
+  id                   String            @id @default(auto()) @map("_id") @db.ObjectId
+  brand                String
+  type                 String
+  warrantyDuration     Int
+  performanceGuarantee String
+  sourcingRules        SourcingRules     @relation(fields: [sourcing_rule_id], references: [id], onDelete: Cascade)
+  sourcing_rule_id     String            @db.ObjectId
+  SourcingSupplier     SourcingSupplier? @relation(fields: [sourcingSupplierId], references: [id], onDelete: Cascade)
+  sourcingSupplierId   String?           @db.ObjectId
+}
+
+model SourcingMountingSystemSpecification {
+  id                   String            @id @default(auto()) @map("_id") @db.ObjectId
+  brand                String
+  type                 String
+  warrantyDuration     Int
+  performanceGuarantee String
+  sourcingRules        SourcingRules     @relation(fields: [sourcing_rule_id], references: [id], onDelete: Cascade)
+  sourcing_rule_id     String            @db.ObjectId
+  SourcingSupplier     SourcingSupplier? @relation(fields: [sourcingSupplierId], references: [id], onDelete: Cascade)
+  sourcingSupplierId   String?           @db.ObjectId
+}
+
+model SourcingContractAgreement {
+  id               String @id @default(auto()) @map("_id") @db.ObjectId
+  responsibilities String
+  deliverables     String
+  paymentTerms     String
+  penalties        String
+  otherTerms       String
+
+  SourcingRules    SourcingRules[]
+  SourcingSupplier SourcingSupplier[]
+}
+
+model SourcingSupplier {
+  id                          String    @id @default(auto()) @map("_id") @db.ObjectId
+  uuid                        String    @unique
+  sourcing_id                 String    @unique @db.ObjectId
+  construction_partners_id    String    @unique @db.ObjectId
+  note                        String?
+  is_quota_partner            Boolean?
+  is_preferred                Boolean?
+  experienceYears             Int?
+  completedProjects           Int?
+  companyProfile              String?
+  financialStatements         String?
+  references                  String?
+  technicalSpecifications     String?
+  bidSubmissionDate           DateTime?
+  bidPrice                    Float?
+  taxesIncluded               Boolean?
+  conflictsOfInterest         String?
+  projectTimeline             String?
+  equipmentCosts              Float?
+  laborCosts                  Float?
+  operationMaintenanceCosts   Float?
+  additionalCosts             Float?
+  pricingValidity             DateTime?
+  bidSecurity                 Float?
+  roof_planning               Boolean?
+  performanceSecurity         Float?
+  siteVisitDate               DateTime?
+  grievance                   String?
+  isAwarded                   Boolean?
+  sourcingContractAgreementId String?   @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sourcingPVPanelSpecification        SourcingPVPanelSpecification[]
+  sourcingInverterSpecification       SourcingInverterSpecification[]
+  sourcingMountingSystemSpecification SourcingMountingSystemSpecification[]
+
+  construction_partners construction_partners      @relation(fields: [construction_partners_id], references: [id], onDelete: Cascade)
+  sourcing              Sourcing                   @relation(fields: [sourcing_id], references: [id], onDelete: Cascade)
+  contractAgreement     SourcingContractAgreement? @relation(fields: [sourcingContractAgreementId], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_sourcing_supplier")
+}
+
+model SourcingContent {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid             String   @unique
+  sourcing_id      String   @db.ObjectId
+  introduction     String?
+  commercial_terms Json?
+  pricing          Json?
+  rules            Json?
+  tags             Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  sourcing        Sourcing       @relation(fields: [sourcing_id], references: [id], onDelete: Cascade)
+  SourcingRules   SourcingRules? @relation(fields: [sourcingRulesId], references: [id], onDelete: Cascade)
+  sourcingRulesId String?        @db.ObjectId
+
+  @@map(name: "srm_sourcing_content")
+}
+
+model SourcingContentItems {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  body      String?
+  category  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map(name: "srm_sourcing_content_items")
+}
+
+model SourcingTasks {
+  id           String             @id @default(auto()) @map("_id") @db.ObjectId
+  uuid         String             @unique
+  sourcing_id  String             @db.ObjectId
+  name         String?
+  associatedTo String?            @db.ObjectId
+  description  String?
+  status       SourcingTaskStatus
+  starts_at    DateTime?
+  ends_at      DateTime?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  sourcing Sourcing @relation(fields: [sourcing_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_sourcing_tasks")
+}
+
+enum SourcingTaskStatus {
+  OPEN
+  CLOSED
+  ARCHIVED
+  PROCESSED
+  SUBMITTED
+  COLLABORATING
+}
+
+model SourcingItems {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid        String   @unique
+  sourcing_id String   @db.ObjectId
+  product_id  String   @db.ObjectId
+  amount      Float?
+  price       Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sourcing Sourcing @relation(fields: [sourcing_id], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_sourcing_items")
+}
+
+model SourcingComments {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid        String   @unique
+  sourcing_id String   @db.ObjectId
+  comment     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sourcing Sourcing @relation(fields: [sourcing_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_sourcing_comments")
+}
+
+model SourcingBids {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid        String   @unique
+  sourcing_id String   @db.ObjectId
+  bids        Json?
+  rules       Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sourcing Sourcing @relation(fields: [sourcing_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_sourcing_bids")
+}
+
+model SourcingOverflow {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid        String   @unique
+  sourcing_id String   @db.ObjectId
+  comment     String?
+  type_id     Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sourcing Sourcing @relation(fields: [sourcing_id], references: [id], onDelete: Cascade)
+
+  @@map(name: "srm_sourcing_overflow")
+}
+
+model Vendor {
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  name    String
+  address String?
+  phone   String?
+  email   String?
+
+  contracts Contract[]
+
+  @@map(name: "erp_vendor")
+}
+
+model Contract {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  vendorId    String   @db.ObjectId
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+
+  vendor        Vendor         @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  status        ContractStatus
+  contractItems ContractItem[]
+
+  @@map(name: "erp_contract")
+}
+
+model ContractItem {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String
+  price       Float
+  quantity    Int
+
+  contractId String @db.ObjectId
+
+  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@map(name: "erp_contract_item")
+}
+
+enum ContractStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+// ------------------------------SYSTEM------------------------------
+
+model PostcodeList {
+  id                          String                        @id @default(auto()) @map("_id") @db.ObjectId
+  postcode                    Int
+  city                        String
+  city_postcode               String
+  geometry                    Json?
+  state_postcode              Int
+  state_name                  String
+  state_area                  Int
+  region_name                 String?
+  geo_point_2d                String
+  createdAt                   DateTime?                     @default(now())
+  updatedAt                   DateTime?                     @updatedAt
+  Sourcing                    Sourcing[]
+  construction_partner_active construction_partner_active[]
+
+  @@map(name: "sys_postcode_list")
+}
+
+// ------------------------------OTHERS------------------------------
+
+// Temporary model for the migration
+// Datacenter Pull through Data Fetcher from the old database
+// Replace with Client Model after migration
+model Lead {
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+  lead_id              Int      @unique
+  uuid                 String   @unique
+  kompass_id           Int?
+  dialfire_id          String?
+  external_id          String?
+  tenant_id            Int?
+  source_id            Int?
+  prospect_number      Int?
+  customer_number      String?
+  salutation           String?
+  title                String?
+  first_name           String?
+  last_name            String?
+  email                String?  @unique
+  phone                String?
+  mobile               String?
+  properties           Json?
+  is_email_verified    Boolean?
+  has_privacy_opt_in   Boolean?
+  has_promotion_opt_in Boolean?
+  born_at              String?
+  converted_at         Boolean?
+  createdAt            DateTime @default(now())
+  isConverted          Boolean?
+  converted_by         String?  @db.ObjectId
+  assigned_to          String?  @db.ObjectId
+  status_id            Int?
+  onHold               Boolean?
+  signature            Boolean?
+  lead_owner           String?  @db.ObjectId
+  checksum             String?
+  referal_number       String?
+  actioncode           String?
+
+  LeadAppointment  LeadAppointment?
+  LeadAddress      LeadAddress?
+  LeadProject      LeadProject?
+  LeadMeters       LeadMeters[]
+  LeadBankAccount  LeadBankAccount?
+  LeadRegistration LeadRegistration?
+  LeadAltOwner     LeadAltOwner[]
+  Antrag           Antrag?
+
+  @@map(name: "lead")
+}
+
+model LeadAddress {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid          String?  @unique
+  lead_id       Int      @unique
+  street_name   String?
+  street_number String?
+  additional    String?
+  postcode      String?
+  city          String?
+  country       String?
+  createdAt     DateTime @default(now())
+
+  lead Lead @relation(fields: [lead_id], references: [lead_id], onDelete: Cascade)
+
+  @@map(name: "lead_address")
+}
+
+model LeadAppointment {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  lead_id       Int       @unique
+  address_id    Int?      @unique
+  sales_user_id Int?      @unique
+  starts_at     DateTime?
+  ends_at       DateTime?
+  createdAt     DateTime  @default(now())
+
+  lead Lead @relation(fields: [lead_id], references: [lead_id], onDelete: Cascade)
+
+  @@map(name: "lead_appointment")
+}
+
+// Website Configuration Model 
+// Datacenter Pull through Data Fetcher from the old database
+// Replace with new Website Model
+
+model LeadProject {
+  id                                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid                                String?  @unique
+  lead_id                             Int      @unique
+  name                                String?
+  product_id                          Int?
+  contract_type_id                    Int?
+  sales_user_id                       Int?
+  roof_size_range_id                  Int?
+  construction_partner_id             Int?
+  remaining_consumption_tariff_id     Float?
+  remaining_consumption_base_price    Float?
+  remaining_consumption_unit_price    Float?
+  electricity_price_increase          Float?
+  module_type_id                      String?
+  module_variant_id                   Int?
+  modules_count                       Int?
+  modules_crosswise                   Boolean?
+  storage_capacity                    String?
+  meter_replacement_costs             Float?
+  is_cloud                            Boolean?
+  is_meter_consolidation_desired      Boolean?
+  storage_can_substitute_power_supply Boolean?
+  phase                               Int?
+  lost_reason_id                      Int?
+  has_signed_wallbox_contract         Boolean?
+  wallbox_product_id                  String?  @db.ObjectId
+  building_type_id                    Int?
+  building_module_area                Int?
+  building_shadowing_type_id          Int?
+  building_orientation_options        Json?
+  building_orientation_id             Int?
+  building_others                     String?
+  backup_power_capability_id          Boolean?
+  meter_box_renewal                   Float?
+  electricity_consumption_annually    Float?
+  device_id                           String?
+  is_captive_consumption              Boolean?
+  special_consumption                 String?
+  emobile_charging_capacity           String?
+  output_water_heater                 Float?
+  meter_box_to_junction_box_distance  Float?
+  meter_box_location                  String?
+  junction_box_location_id            Int?
+  router_location_id                  Int?
+  has_lan_connectivity                Boolean?
+  has_equipotential_bonding_rail      Boolean?
+  roofing_type_id                     Int?
+  roof_type_id                        Int?
+  roof_type_other                     String?
+  age_range_id                        Int?
+  tiles_fixing_type_id                Int?
+  tiles_visible_size                  String?
+  module_fields_count                 Int?
+  eaves_height                        Float?
+  eaves_height_alt                    Float?
+  ridge_height                        Float?
+  ridge_height_alt                    Float?
+  renovated_at                        String?
+  insulation_type_id                  Int?
+  rafter_insulation_thickness         Float?
+  rafter_width                        Float?
+  width                               Float?
+  width_alt                           Float?
+  length                              Float?
+  length_alt                          Float?
+  pitch                               Float?
+  boardBinder                         Boolean?
+  boardBinderOther                    String?
+  object_street_name_alt              String?
+  object_street_number_alt            String?
+  object_postcode_alt                 String?
+  object_city_alt                     String?
+  object_country_alt                  String?
+
+  converted Boolean?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  lead Lead @relation(fields: [lead_id], references: [lead_id], onDelete: Cascade)
+
+  @@map(name: "lead_project")
+}
+
+model LeadAltOwner {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  lead_id    Int    @unique
+  first_name String
+  last_name  String
+  born_at    String
+  lead       Lead   @relation(fields: [lead_id], references: [lead_id], onDelete: Cascade)
+
+  @@map(name: "lead_alt_owner")
+}
+
+model LeadMeters {
+  id                               String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid                             String?  @unique
+  lead_id                          Int      @unique
+  electricity_consumption_annually Int?
+  device_id                        String
+  purpose                          String?
+  is_main_device                   Boolean?
+
+  lead Lead @relation(fields: [lead_id], references: [lead_id], onDelete: Cascade)
+
+  @@map(name: "lead_meters")
+}
+
+model LeadBankAccount {
+  id                     String   @id @default(auto()) @map("_id") @db.ObjectId
+  lead_id                Int      @unique
+  uuid                   String?  @unique
+  name                   String?
+  bic                    String?
+  iban                   String?
+  bank_name              String?
+  bank_account_bank_name String?
+  bank_account_bank_city String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  lead Lead @relation(fields: [lead_id], references: [lead_id], onDelete: Cascade)
+
+  @@map(name: "lead_bank_account")
+}
+
+model LeadRegistration {
+  id                           String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid                         String   @unique
+  lead_id                      Int      @unique
+  land_register_title          String?
+  land_register_district_court String?
+  land_register_district_name  String?
+  land_register_page           String?
+  land_register_field_name     String?
+  land_register_field_sector   String?
+  createdAt                    DateTime @default(now())
+  updatedAt                    DateTime @updatedAt
+
+  lead Lead @relation(fields: [lead_id], references: [lead_id], onDelete: Cascade)
+
+  @@map(name: "lead_registration")
+}
+
+// TODO Check which is missing in LeadProject and Project tables
+
+model LeadIntroduction {
+  id                               String  @id @default(auto()) @map("_id") @db.ObjectId
+  uuid                             String  @unique
+  lead_id                          Int     @unique
+  product_choice_id                Int
+  building_type_id                 Int
+  roofing_type_id                  Int
+  roof_type_id                     Int
+  roof_age_range_id                Int
+  roof_size_range_id               Int
+  roof_orientation_id              Int
+  roof_areas_orientation_ids       Int // Consider changing this if it's an array or set
+  contract_type_preference_id      Int
+  electricity_consumption_annually Int
+  remaining_consumption_tariff_id  Int
+  postcode                         String
+  is_roof_age_below_70_years       Boolean
+  is_roof_refurbished              Boolean
+  is_lead_owner                    Boolean
+  is_leads_main_residence          Boolean
+  is_captive_consumption           Boolean
+  is_commercial_building           Boolean
+  wants_wallbox                    Int
+
+  // You might need relations here, e.g.
+  // lead          Lead @relation(fields: [lead_id], references: [id], onDelete: Cascade)
+  // productChoice ProductChoice @relation(fields: [product_choice_id], references: [id], onDelete: Cascade)
+  // ... and so on for each _id field that references another model
+
+  @@map(name: "lead_introduction")
+}
