@@ -1,32 +1,31 @@
 export const NEW_PROJECT = (projects, users, groups, event, category, status) => {
-
     return [
-        { name: 'name', label: 'Name', type: 'text', required: true },
+        { name: 'name', label: 'Name', type: 'text', required: false },
         { name: 'event_type_id', label: 'Anforderung', type: 'select', options: event, required: true },
-        { name: 'description', label: 'Beschreibung', type: 'textarea', rows: 3, rows: 3, width: 2, required: true },
+        { name: 'description', label: 'Beschreibung', type: 'textarea', rows: 3, rows: 3, width: 2, required: false },
         { name: 'project_id', label: 'Projekt', type: 'select', options: projects, required: true },
-        { name: 'language_id', label: 'Sprache', type: 'text', required: true },
-        { name: 'group_id', label: 'Abteilung', type: 'select', options: groups, required: true },
-        { name: 'assignedTo', label: 'Zugewiesen an', type: 'select', options: users, required: true },
-        { name: 'baseline_spend', label: 'Zielpreis', type: 'text', required: true },
-        { name: 'target_savings', label: 'Marge', type: 'text', required: true },
-        { name: 'category', label: 'Kategorie', type: 'select', options: category, required: true },
+        { name: 'language_id', label: 'Sprache', type: 'text', required: false },
+        { name: 'group_id', label: 'Abteilung', type: 'select', options: groups, required: false },
+        { name: 'assignedTo', label: 'Zugewiesen an', type: 'select', options: users, required: false },
+        { name: 'baseline_spend', label: 'Zielpreis', type: 'text', required: false },
+        { name: 'target_savings', label: 'Marge', type: 'text', required: false },
+        { name: 'category', label: 'Kategorie', type: 'select', options: category, required: false },
         { name: 'status', label: 'Status', type: 'select', options: status, required: true },
-        { name: 'contract_effective_date', label: 'Errichtungszeitraum von:', type: 'date', required: true },
-        { name: 'contract_expiry_date', label: 'Errichtungszeitraum bis', type: 'date', required: true },
-        { name: 'is_test_project', label: 'Test Projekt?', type: 'checkbox', required: true },
+        { name: 'contract_effective_date', label: 'Errichtungszeitraum von:', type: 'date', required: false },
+        { name: 'contract_expiry_date', label: 'Errichtungszeitraum bis', type: 'date', required: false },
+        { name: 'is_test_project', label: 'Test Projekt?', type: 'checkbox', required: false },
     ]
 }
 
 export const SOURCING_RULES = () => {
     return [
-        { name: 'response_date', label: 'Start Datum', type: 'date', required: true },
-        { name: 'due_date', label: 'Fällig bis', type: 'date', required: true },
+        { name: 'response_date', label: 'Start Datum', type: 'date', required: false },
+        { name: 'due_date', label: 'Fällig bis', type: 'date', required: false },
         { name: 'due_date_days', label: 'Fällig bis (in Tagen)', type: 'text', required: false },
-        { name: 'est_award_time', label: 'Vergabedatum', type: 'date', required: true },
+        { name: 'est_award_time', label: 'Vergabedatum', type: 'date', required: false },
     ]
 }
-
+SourcingRules
 export const SOURCING_BIDDER_RULES = () => {
     return [
         { name: 'experienceYears', label: 'Der Bieter muss seine Erfahrung im Entwerfen, Beschaffen und Installieren von PV-Systemen vorlegen.', type: 'checkbox', required: false },
@@ -81,7 +80,7 @@ export const SOURCING_BIDDER_RULES = () => {
 
 export const SOURCING_CONTENT_INTRODUCTION = () => {
     return [
-        { name: "introduction", label: "", type: "textarea", rows: 10, width: 2, placeholder: "Einleitungstext", required: true, }
+        { name: "introduction", label: "", type: "textarea", rows: 10, width: 2, placeholder: "Einleitungstext", required: false, }
     ]
 }
 
@@ -161,13 +160,13 @@ export const SOURCING_CONTENT_RULES = (rules) => {
 
 export const SOURCING_RULES_EDIT = () => {
     return [
-        { name: 'response_date', label: 'Start Datum', type: 'date', required: true },
-        { name: 'due_date', label: 'Fällig bis', type: 'date', required: true },
-        { name: 'due_date_days', label: 'Fällig bis (in Tagen)', type: 'text', required: true },
-        { name: 'est_award_time', label: 'Vergabedatum', type: 'date', required: true },
+        { name: 'response_date', label: 'Start Datum', type: 'date', required: false },
+        { name: 'due_date', label: 'Fällig bis', type: 'date', required: false },
+        { name: 'due_date_days', label: 'Fällig bis (in Tagen)', type: 'text', required: false },
+        { name: 'est_award_time', label: 'Vergabedatum', type: 'date', required: false },
         { name: 'name', label: 'Bietername', type: 'text', required: true },
-        { name: 'experienceYears', label: 'Jahre Erfahrung', type: 'text', required: true },
-        { name: 'completedProjects', label: 'Abgeschlossene Projekte', type: 'text', required: true },
+        { name: 'experienceYears', label: 'Jahre Erfahrung', type: 'text', required: false },
+        { name: 'completedProjects', label: 'Abgeschlossene Projekte', type: 'text', required: false },
         { name: 'companyProfile', label: 'Firmenprofil', type: 'textarea', rows: 3, required: false },
         { name: 'financialStatements', label: 'Finanzaufstellungen', type: 'textarea', rows: 3, required: false },
         { name: 'references', label: 'Referenzen', type: 'textarea', rows: 3, required: false },
@@ -175,7 +174,7 @@ export const SOURCING_RULES_EDIT = () => {
         { name: 'bidSubmissionDate', label: 'Angebotsabgabedatum', type: 'date', required: false },
         { name: 'bidStatus', label: 'Angebotsstatus', type: 'select', required: true, options: ['EINGEREICHT', 'AKZEPTIERT', 'ABGELEHNT', 'AUSSTEHEND', 'VERSCHOBEN'] },
         { name: 'bidPrice', label: 'Angebotspreis', type: 'text', required: false },
-        { name: 'taxesIncluded', label: 'Steuern inbegriffen', type: 'checkbox', required: true },
+        { name: 'taxesIncluded', label: 'Steuern inbegriffen', type: 'checkbox', required: false },
         { name: 'conflictsOfInterest', label: 'Interessenskonflikte', type: 'textarea', rows: 3, required: false },
         { name: 'projectTimeline', label: 'Projektzeitplan', type: 'textarea', rows: 3, required: false },
         { name: 'equipmentCosts', label: 'Ausrüstungskosten', type: 'text', required: false },

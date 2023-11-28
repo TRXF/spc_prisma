@@ -34,7 +34,7 @@ export const CC_CUSTOMER = (companies, team) => {
 export const CC_COMPANY = () => {
     return [
         { name: 'companyDomain', label: 'Company Domain', type: 'text', pattern: '', rules: { required: false } },
-        { name: 'companyName', label: 'Company Name', type: 'text', pattern: '', rules: { required: false } },
+        { name: 'companyName', label: 'Company Name', type: 'text', pattern: '', rules: { required: true } },
         { name: 'industry', label: 'Industry', type: 'select', options: industries, rules: { required: false } },
         { name: 'type', label: 'Type', type: 'select', options: types, rules: { required: false } },
         { name: 'phone', label: 'Phone', type: 'text', pattern: '', rules: { required: false } },
@@ -48,7 +48,7 @@ export const CC_COMPANY = () => {
         { name: 'description', label: 'Description', type: 'text', pattern: '', rules: { required: false } },
         { name: 'linkedin', label: 'Linkedin', type: 'text', pattern: '', rules: { required: false } },
         { name: 'website', label: 'Website', type: 'text', pattern: '', rules: { required: false } },
-        { name: 'timeZone', label: 'Time Zone', type: 'text', pattern: '', rules: { required: false } },
+        { name: 'timeZone', label: 'Time Zone', type: 'text', pattern: '', rules: { required: false } }
     ]
 }
 

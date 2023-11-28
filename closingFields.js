@@ -7,7 +7,7 @@ const emobile_charging_capacity = [{ value: 1, label: 'nicht vorhanden' }, { val
 
 export const LEAD_CONTACT = () => {
     return [
-        { name: 'salutation', label: 'Anrede', type: 'select', options: salutation, width: "1", rules: { required: false } },
+        { name: 'salutation', label: 'Anrede', type: 'select', options: salutation, width: "1", rules: { required: true } },
         { name: 'title', label: 'Titel', type: 'text', pattern: '', width: "1", rules: { required: false } },
         { name: 'first_name', label: 'Vorname', type: 'text', pattern: '', width: "1", rules: { required: true } },
         { name: 'last_name', label: 'Nachname', type: 'text', pattern: '', width: "1", rules: { required: true } },
@@ -28,11 +28,11 @@ export const PROMOTION = () => {
 
 export const LEAD_ADDRESS = () => {
     return [
-        { name: 'street_name', label: 'Strasse', type: 'text', width: "1", rules: { required: true } },
-        { name: 'street_number', label: 'Hausnummer', type: 'text', pattern: '', width: "1", rules: { required: true } },
-        { name: 'postcode', label: 'PLZ', type: 'text', pattern: '', width: "1", rules: { required: true } },
-        { name: 'city', label: 'Stadt', type: 'text', pattern: '', width: "1", rules: { required: true } },
-        { name: 'country', label: 'Land', type: 'text', pattern: '', width: "1", rules: { required: true } },
+        { name: 'street_name', label: 'Strasse', type: 'text', width: "1", rules: { required: false } },
+        { name: 'street_number', label: 'Hausnummer', type: 'text', pattern: '', width: "1", rules: { required: false } },
+        { name: 'postcode', label: 'PLZ', type: 'text', pattern: '', width: "1", rules: { required: false } },
+        { name: 'city', label: 'Stadt', type: 'text', pattern: '', width: "1", rules: { required: false } },
+        { name: 'country', label: 'Land', type: 'text', pattern: '', width: "1", rules: { required: false } },
     ]
 }
 
@@ -40,9 +40,9 @@ export const BANK_ACCOUNT = () => {
     return [
         { name: 'name', label: 'Kontoinhaber', type: 'text', width: "1", rules: { required: true } },
         { name: 'iban', label: 'IBAN', type: 'text', pattern: '', width: "1", rules: { required: true } },
-        { name: 'bic', label: 'BIC (optional)', type: 'text', pattern: '', width: "1", rules: { required: false } },
-        { name: 'bank_account_bank_name', label: 'Bezeichnung Bankinstitut (optional)', type: 'text', pattern: '', width: "1", rules: { required: false } },
-        { name: 'bank_account_bank_city', label: 'Ort Bankinstitut (optional)', type: 'text', pattern: '', width: "1", rules: { required: false } },
+        { name: 'bic', label: 'BIC (optional)', type: 'text', pattern: '', width: "1", rules: { required: true } },
+        { name: 'bank_account_bank_name', label: 'Bezeichnung Bankinstitut (optional)', type: 'text', pattern: '', width: "1", rules: { required: true } },
+        { name: 'bank_account_bank_city', label: 'Ort Bankinstitut (optional)', type: 'text', pattern: '', width: "1", rules: { required: true } },
     ]
 }
 
@@ -83,9 +83,9 @@ export const ROOF_INFO = () => {
         { name: 'roof_type_other', label: 'Sonstiges', type: 'text', pattern: '', width: "1", rules: { required: false } },
         { name: 'roofing_type_id', label: 'Dacheindeckung', type: 'select', options: roofing_types, pattern: '', width: "1", rules: { required: false } },
         { name: 'age_range_id', label: 'Dachalter', type: 'select', options: age_ranges, pattern: '', width: "1", rules: { required: false } },
-        { name: 'renovated_at', label: 'Jahr der Sanierung (optional)', type: "text", pattern: '', width: "1", rules: { required: true } },
-        { name: 'tiles_fixing_type_id', label: 'Befestigung der Ziegel', type: 'select', options: fixing_types, pattern: '', width: "1", rules: { required: true } },
-        { name: 'tiles_visible_size', label: 'Sichtbares Ziegelmaß BxH (je 0-50 cm)', type: 'text', pattern: '', width: "1", rules: { required: true } },
+        { name: 'renovated_at', label: 'Jahr der Sanierung (optional)', type: "text", pattern: '', width: "1", rules: { required: false } },
+        { name: 'tiles_fixing_type_id', label: 'Befestigung der Ziegel', type: 'select', options: fixing_types, pattern: '', width: "1", rules: { required: false } },
+        { name: 'tiles_visible_size', label: 'Sichtbares Ziegelmaß BxH (je 0-50 cm)', type: 'text', pattern: '', width: "1", rules: { required: false } },
     ]
 }
 
@@ -97,7 +97,7 @@ export const ROOFSIZE_INFO = () => {
         { name: 'length_alt', label: 'Dachlänge (2te Seite) (m)', type: 'number', width: "1", rules: { required: false } },
         { name: 'ridge_height', label: 'Firsthöhe (m)', type: 'number', pattern: '', width: "1", rules: { required: false } },
         { name: 'ridge_height_alt', label: 'Firsthöhe (2te Seite) (m)', type: 'number', width: "1", rules: { required: false } },
-        { name: 'eaves_height', label: 'Traufhöhe (m)', type: "number", pattern: '', width: "1", rules: { required: true } },
+        { name: 'eaves_height', label: 'Traufhöhe (m)', type: "number", pattern: '', width: "1", rules: { required: false } },
         { name: 'eaves_height_alt', label: 'Traufhöhe (2te Seite) (m)', type: 'number', width: "1", rules: { required: false } },
         { name: 'pitch', label: 'Dachneigung in °', type: 'number', width: "1", rules: { required: false } },
     ]
